@@ -97,7 +97,7 @@ Devise.setup do |config|
   # Notice that if you are skipping storage for all authentication paths, you
   # may want to disable generating routes to Devise's sessions controller by
   # passing skip: :sessions to `devise_for` in your config/routes.rb
-  config.skip_session_storage = [:http_auth]
+  config.skip_session_storage = [:http_auth, :jwt]
 
   # By default, Devise cleans up the CSRF token on authentication to
   # avoid CSRF token fixation attacks. This means that, when using AJAX
@@ -178,7 +178,7 @@ Devise.setup do |config|
 
   # ==> Configuration for :validatable
   # Range for password length.
-  config.password_length = 6..128
+  config.password_length = 8..128
 
   # Email regex used to validate email formats. It simply asserts that
   # one (and only one) @ exists in the given string. This is mainly
@@ -277,10 +277,11 @@ Devise.setup do |config|
   # If you want to use other strategies, that are not supported by Devise, or
   # change the failure app, you can configure them inside the config.warden block.
   #
-  # config.warden do |manager|
-  #   manager.intercept_401 = false
-  #   manager.default_strategies(scope: :user).unshift :some_external_strategy
-  # end
+  config.warden do |manager|
+    #   manager.intercept_401 = false
+    manager.strategies.add :jwt, Devise::Strategies::JWT # name of class created below to give us auth logic
+    manager.default_strategies(scope: :user).unshift :jwt # making jwt is the first auth strategy to try
+  end
 
   # ==> Mountable engine configurations
   # When using Devise inside an engine, let's call it `MyEngine`, and this engine
@@ -308,4 +309,24 @@ Devise.setup do |config|
   # When set to false, does not sign a user in automatically after their password is
   # changed. Defaults to true, so a user is signed in automatically after changing a password.
   # config.sign_in_after_change_password = true
+end
+
+module Devise
+  module Strategies
+    class JWT < Base
+      def valid?
+        request.headers["Authorization"].present?
+      end
+
+      def authenticate!
+        token   = request.headers.fetch("Authorization", "").split(" ").last
+        payload = JsonWebToken.decode(token)
+        success! User.find(payload["id"] )
+      rescue ::JWT::ExpiredSignature
+        fail! "Auth token has expired"
+      rescue ::JWT::DecodeError
+        fail! "Auth token is invalid"
+      end
+    end
+  end
 end
