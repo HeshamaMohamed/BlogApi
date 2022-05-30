@@ -1,9 +1,10 @@
 class Post < ApplicationRecord
   belongs_to :user
   has_many :comments
-  has_many :tags
+  has_and_belongs_to_many :tags
 
-  validates :title, :body, :author, presence: true
+  validates :title, :body, :user, presence: true
+  validates :tags, presence: true
 
   after_create :delete_after_24hours
 
