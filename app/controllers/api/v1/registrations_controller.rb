@@ -3,7 +3,7 @@ class Api::V1::RegistrationsController < Devise::RegistrationsController
     user = User.create(sign_up_params)
 
     if user.save
-      render json: { token: JsonWebToken.encode(sub: user.id) }
+      render json: { token: JsonWebToken.encode(id: user.id) }
     else
       render json: { errors: user.errors.full_messages }
     end
