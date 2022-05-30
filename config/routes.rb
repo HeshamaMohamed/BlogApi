@@ -6,7 +6,9 @@ Rails.application.routes.draw do
         post 'users/register', to: 'registrations#create'
         post 'users/login', to: 'sessions#create'
       end
-      resources :posts, only: %i[index show create update destroy]
+      resources :posts, only: %i[index show create update destroy] do
+        resources :comments
+      end
     end
   end
 end
