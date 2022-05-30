@@ -3,6 +3,15 @@ class Api::V1::PostsController < ApplicationController
   before_action :authenticate_user
   before_action :authenticate_post_ownership, only: %i[update destroy]
 
+  def index
+    posts = Post.all.includes(:tags)
+    posts = posts.map do |post|
+      tags = { tags: post.tags.map(&:name) }
+      post = post.as_json.merge(tags)
+    end
+    render json: posts
+  end
+
   def create
     post = Post.new(post_params)
     @post.user = current_user
