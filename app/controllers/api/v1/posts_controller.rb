@@ -4,10 +4,11 @@ class Api::V1::PostsController < ApplicationController
   before_action :authenticate_post_ownership, only: %i[update destroy]
 
   def index
-    posts = Post.all.includes(:tags)
+    posts = Post.all.includes(:tags).includes(:comments)
     posts = posts.map do |post|
       tags = { tags: post.tags.map(&:name) }
-      post = post.as_json.merge(tags)
+      comments = { comments: post.comments.map(&:body) }
+      post.as_json.merge(tags).merge(comments)
     end
     render json: posts
   end
@@ -25,8 +26,9 @@ class Api::V1::PostsController < ApplicationController
   end
 
   def show
-    tags = {tags: @post.tags.map(&:name) }
-    post = @post.as_json.merge(tags)
+    tags = { tags: @post.tags.map(&:name) }
+    comments = { comments: @post.comments.map(&:body) }
+    post = @post.as_json.merge(tags).merge(comments)
     render json: post
   end
 
