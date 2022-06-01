@@ -1,0 +1,51 @@
+version: '3.4'
+
+services:
+  app: 
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - database
+      - redis
+    ports: 
+      - "3000:3000"
+    volumes:
+      - .:/app # mounts our application code on the host to the /app directory on the container.
+      - gem_cache:/usr/local/bundle/gems # Adding this volume means that if you recreate the container, the gems will be mounted to the new container.
+      # if you do make changes to your project gems in development, you will need to remember to delete this volume before recreating your application service.
+    env_file: .env # env_file: This tells Compose that we would like to add environment variables from a file called .env located in the build context.
+    environment: # Using this option allows us to set a non-sensitive environment variable, passing information about the Rails environment to the container.
+      RAILS_ENV: development
+  
+  database:
+    image: postgres:12.1
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql # in order to create our blog database user
+      # After the image entrypoint creates the default postgres user and database, it will run any scripts found in the docker-entrypoint-initdb.d/ directory
+
+  redis:
+    image: redis:5.0.7
+
+  sidekiq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - app      
+      - database
+      - redis
+    volumes:
+      - .:/app
+      - gem_cache:/usr/local/bundle/gems
+    env_file: .env
+    environment:
+      RAILS_ENV: development
+    entrypoint: ./entrypoints/sidekiq-entrypoint.sh # This entrypoint setting points to entrypoints/sidekiq-entrypoint.sh, which includes the appropriate command to start the sidekiq service
+
+volumes:
+  gem_cache:
+  db_data:
+  node_modules:
+
