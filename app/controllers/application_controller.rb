@@ -1,8 +1,6 @@
 class ApplicationController < ActionController::API
   include ActionController::HttpAuthentication::Token::ControllerMethods
 
-  attr_reader :current_user
-
   def authenticate_user
     if request.headers['Authorization'].present?
       authenticate_or_request_with_http_token do |token|
@@ -14,7 +12,7 @@ class ApplicationController < ActionController::API
         render :unauthorized
       end
     else
-      render json: { errors: 'Login Required' }
+      render json: { errors: 'Login Required' }, status: :unauthorized
     end
   end
 end

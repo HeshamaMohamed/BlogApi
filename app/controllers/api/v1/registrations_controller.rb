@@ -5,13 +5,13 @@ class Api::V1::RegistrationsController < Devise::RegistrationsController
     if user.save
       render json: { token: JsonWebToken.encode(id: user.id) }
     else
-      render json: { errors: user.errors.full_messages }
+      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   private
 
   def sign_up_params
-    params.require(:user).permit(:name, :email, :password, :image)
+    params.permit(:name, :email, :password, :image)
   end
 end

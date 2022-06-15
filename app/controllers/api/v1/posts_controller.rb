@@ -1,59 +1,55 @@
 class Api::V1::PostsController < ApplicationController
-  before_action :set_post, only: %i[show update destroy]
   before_action :authenticate_user
-  before_action :authenticate_post_ownership, only: %i[update destroy]
+  before_action :authorize_post_author, only: %i[update destroy]
+  before_action :set_post, only: %i[show update destroy]
 
   def index
-    posts = Post.all.includes(:tags).includes(:comments)
-    posts = posts.map do |post|
-      tags = { tags: post.tags.map(&:name) }
-      comments = { comments: post.comments.map(&:body) }
-      post.as_json.merge(tags).merge(comments)
+    posts = Post.all
+    if posts.empty?
+      render json: { errors: 'There are no posts created yet.' }, status: :no_content
+    else
+      render json: { posts: posts }
     end
-    render json: posts
   end
 
   def create
     post = Post.new(post_params)
-    @post.user = current_user
-    @post.tags = tags_from_params
+    post.user = @current_user
+    post.tags = tags_from_params
 
     if post.save
       render json: post
     else
-      render json: { errors: post.errors.full_messages }
+      render json: { errors: post.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def show
-    tags = { tags: @post.tags.map(&:name) }
-    comments = { comments: @post.comments.map(&:body) }
-    post = @post.as_json.merge(tags).merge(comments)
-    render json: post
+    render json: @post
   end
 
   def update
     if @post.update!(post_params)
-      render json: post
+      render json: { 'Modified!': @post }
     else
-      render json: { errors: @post.errors.full_messages }
+      render json: { errors: @post.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def destroy
     @post.destroy
-    render json: { errors: 'Post deleted successfuly!' }
+    render json: { message: 'Post deleted successfuly!' }
   end
 
   private
 
   def post_params
-    params.require(:post).permit(:title, :body)
+    params.permit(:title, :body)
   end
 
   def set_post
     @post = Post.find_by(id: params[:id])
-    render json: { errors: 'Post not found' } unless @post
+    render json: { errors: 'Post not found' }, status: :not_found unless @post
   end
 
   def tags_from_params
@@ -63,9 +59,9 @@ class Api::V1::PostsController < ApplicationController
     end
   end
 
-  def authenticate_post_ownership
-    unless @post.user == current_user
-      render json: { errors: 'Only post author can edit/delete the post.' }
+  def authorize_post_author
+    unless @post.user == @current_user
+      render json: { errors: 'Only post author can edit/delete the post.' }, status: :forbidden
     end
   end
 end
