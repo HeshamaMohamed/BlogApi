@@ -3,8 +3,7 @@ class Post < ApplicationRecord
   has_many :comments, dependent: :destroy
   has_and_belongs_to_many :tags
 
-  validates :title, :body, :user, presence: true
-  validates :tags, presence: true
+  validates :title, :body, :user, :tags, presence: true
 
   after_create :delete_after_24hours
 

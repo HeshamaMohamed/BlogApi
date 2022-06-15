@@ -6,4 +6,6 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy
 
   validates :name, presence: true, length: { within: 6..32 }, format: { with: /\A[a-zA-Z\s]*\Z/, message: 'can contain alphabets only' }
+  validates :email, presence: true, format: { with: /\A[^@\s]+@([^@.\s]+\.)+[^@.\s]+\z/ }
+  validates_uniqueness_of :email, case_sensitive: false
 end
