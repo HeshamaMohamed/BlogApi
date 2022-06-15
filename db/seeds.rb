@@ -13,6 +13,15 @@ tag1 = Tag.create!(name: 'Tech')
 tag2 = Tag.create!(name: 'Economics')
 tag3 = Tag.create!(name: 'Politics')
 
-Post.create!(title: 'Tech Post', body: 'This is a tech post test', user: user1, tags: [tag1])
-Post.create!(title: 'Economics', body: 'This is an economics post test', user: user1, tags: [tag2])
-Post.create!(title: 'Political Post', body: 'This is a political post test', user: user2, tags: [tag3])
+post1 = Post.create!(title: 'Tech Post', body: 'This is a tech post test', user: user1, tags: [tag1])
+post2 = Post.create!(title: 'Eco Post', body: 'This is an economics post test', user: user1, tags: [tag1, tag2])
+post3 = Post.create!(title: 'Fun Post', body: 'This is a political post test', user: user2, tags: [tag1, tag2, tag3])
+
+comment1_post1 = Comment.create!(body: 'This is comment 1 on post 1', user: user1, post: post1)
+
+comment1_post2 = Comment.create!(body: 'This is comment 1 on post 2', user: user1, post: post2)
+comment2_post2 = Comment.create!(body: 'This is comment 2 on post 2', user: user2, post: post2)
+
+comment1_post3 = Comment.create!(body: 'This is comment 1 on post 3', user: user1, post: post3)
+comment2_post3 = Comment.create!(body: 'This is comment 2 on post 3', user: user2, post: post3)
+comment3_post3 = Comment.create!(body: 'This is comment 3 on post 3', user: user3, post: post3)
