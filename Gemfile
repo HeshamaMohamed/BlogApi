@@ -19,6 +19,7 @@ gem 'sidekiq', '6.4.1'
 # Use ActiveModel has_secure_password
 gem 'bcrypt', '~> 3.1.7'
 gem 'devise'
+gem 'devise-jwt'
 gem 'jwt'
 
 # Use ActiveStorage variant
@@ -39,6 +40,7 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'guard-rspec'
   gem 'shoulda-matchers'
+  gem 'shoulda-callback-matchers'
   gem 'database_cleaner-active_record'
   gem 'factory_bot_rails'
 end
